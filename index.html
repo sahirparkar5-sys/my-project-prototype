@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI VitalMind - Health Intelligence App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #1a1a2e;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            overflow-y: auto;
+            border: 8px solid #1a1a2e;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            background: #1a1a2e;
+            color: white;
+            padding: 10px 24px 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 16px 20px;
+            flex-shrink: 0;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .header-top h1 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .header-top .logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #10b981, #06d6a0);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .greeting {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+
+        .health-score-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 12px;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .score-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(#10b981 0% 82%, rgba(255,255,255,0.2) 82% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .score-circle-inner {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #1a1a2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .score-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .score-label {
+            font-size: 8px;
+            opacity: 0.7;
+        }
+
+        .score-details h3 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .score-details p {
+            font-size: 12px;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+
+        .content {
+            padding: 16px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1a1a2e;
+        }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .vital-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border: 1px solid #f0f0f0;
+        }
+
+        .vital-card .icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .vital-card .value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .vital-card .label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .vital-card .status {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        .status-normal { background: #d1fae5; color: #065f46; }
+        .status-warning { background: #fef3c7; color: #92400e; }
+        .status-alert { background: #fee2e2; color: #991b1b; }
+
+        .icon-heart { background: #fee2e2; }
+        .icon-oxygen { background: #dbeafe; }
+        .icon-temp { background: #fef3c7; }
+        .icon-stress { background: #ede9fe; }
+
+        .insights-section {
+            margin-bottom: 20px;
+        }
+
+        .insight-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border-left: 4px solid;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .insight-green { border-left-color: #10b981; }
+        .insight-yellow { border-left-color: #f59e0b; }
+        .insight-red { border-left-color: #ef4444; }
+
+        .insight-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .insight-green .insight-icon { background: #d1fae5; }
+        .insight-yellow .insight-icon { background: #fef3c7; }
+        .insight-red .insight-icon { background: #fee2e2; }
+
+        .insight-content h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .insight-content p {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .insight-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        .tag-self { background: #d1fae5; color: #065f46; }
+        .tag-otc { background: #fef3c7; color: #92400e; }
+        .tag-doctor { background: #fee2e2; color: #991b1b; }
+
+        .lab-report-section {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            margin-bottom: 24px;
+        }
+
+        .lab-report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .lab-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .lab-item:last-child { border-bottom: none; }
+
+        .lab-item .name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .lab-item .value-range {
+            text-align: right;
+        }
+
+        .lab-item .val {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .lab-item .range {
+            font-size: 10px;
+            color: #999;
+        }
+
+        .val-normal { color: #10b981; }
+        .val-warning { color: #f59e0b; }
+        .val-alert { color: #ef4444; }
+
+        .page.active {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-bar {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #f0f0f0;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            color: #999;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: #1a1a2e;
+        }
+
+        .nav-item .nav-icon {
+            font-size: 20px;
+        }
+
+        /* Page 2 - Chat */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .chat-container {
+            padding: 16px;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .chat-user {
+            background: #1a1a2e;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            margin-left: auto;
+        }
+
+        .chat-ai {
+            background: #f0f4f8;
+            color: #1a1a2e;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            gap: 10px;
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 24px;
+            border: 1px solid #e0e0e0;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .chat-send {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Page 3 - Medications */
+        .med-card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .med-time {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: #ede9fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-size: 11px;
+            font-weight: 600;
+            color: #5b21b6;
+        }
+
+        .med-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .med-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .med-status-taken {
+            margin-left: auto;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .med-status-pending {
+            margin-left: auto;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+        }
+
+        .doctor-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .doctor-card h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .doctor-card p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .doctor-card .btn-connect {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 20px 24px 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41 AM</span>
+            <span>VitalMind</span>
+            <span>100% 🔋</span>
+        </div>
+
+        <!-- Page 1: Dashboard -->
+        <div class="page active" id="page-dashboard">
+            <div class="header">
+                <div class="header-top">
+                    <div>
+                        <div class="greeting">Good Morning, Sahir</div>
+                        <h1>Health Dashboard</h1>
+                    </div>
+                    <div class="logo">VM</div>
+                </div>
+
+                <div class="health-score-card">
+                    <div class="score-circle">
+                        <div class="score-circle-inner">
+                            <div class="score-number">82</div>
+                            <div class="score-label">SCORE</div>
+                        </div>
+                    </div>
+                    <div class="score-details">
+                        <h3>Overall Health Score</h3>
+                        <p>Based on your vitals and latest blood report from Aug 10, 2026</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="section-title">Real-Time Vitals</div>
+                <div class="vitals-grid">
+                    <div class="vital-card">
+                        <div class="icon icon-heart">❤️</div>
+                        <div class="value">72 bpm</div>
+                        <div class="label">Heart Rate</div>
+                        <div class="status status-normal">Normal</div>
+                    </div>
+                    <div class="vital-card">
+                        <div class="icon icon-oxygen">🫁</div>
+                        <div class="value">98%</div>
+                        <div class="label">Blood Oxygen</div>
+                        <div class="status status-normal">Normal</div>
+                    </div>
+                    <div class="vital-card">
+                        <div class="icon icon-temp">🌡️</div>
+                        <div class="value">36.6°C</div>
+                        <div class="label">Skin Temperature</div>
+                        <div class="status status-normal">Normal</div>
+                    </div>
+                    <div class="vital-card">
+                        <div class="icon icon-stress">🧘</div>
+                        <div class="value">Low</div>
+                        <div class="label">Stress Level</div>
+                        <div class="status status-warning">Slightly Elevated</div>
+                    </div>
+                </div>
+
+                <div class="section-title">AI Health Insights</div>
+                <div class="insights-section">
+                    <div class="insight-card insight-red">
+                        <div class="insight-icon">🚨</div>
+                        <div class="insight-content">
+                            <h4>Elevated LDL Cholesterol</h4>
+                            <p>Your LDL is 165 mg/dL (ref: &lt;100). Combined with family history, this needs medical attention.</p>
+                            <span class="insight-tag tag-doctor">⚡ Routed to Dr. Mehta</span>
+                        </div>
+                    </div>
+                    <div class="insight-card insight-yellow">
+                        <div class="insight-icon">💊</div>
+                        <div class="insight-content">
+                            <h4>Vitamin D Deficiency</h4>
+                            <p>Level: 18 ng/mL (ref: 30-100). Consider Vitamin D3 supplement 2000 IU daily.</p>
+                            <span class="insight-tag tag-otc">OTC Suggestion</span>
+                        </div>
+                    </div>
+                    <div class="insight-card insight-green">
+                        <div class="insight-icon">💧</div>
+                        <div class="insight-content">
+                            <h4>Hydration Reminder</h4>
+                            <p>Your creatinine is at upper normal (1.3). Increase water intake to 3L/day to support kidney function.</p>
+                            <span class="insight-tag tag-self">Self-Manage</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">Latest Lab Report</div>
+                <div class="lab-report-section">
+                    <div class="lab-report-header">
+                        <span style="font-size:13px; font-weight:600;">Blood Test - Aug 10, 2026</span>
+                        <button class="upload-btn">+ Upload New</button>
+                    </div>
+                    <div class="lab-item">
+                        <span class="name">Hemoglobin</span>
+                        <div class="value-range">
+                            <div class="val val-normal">14.2 g/dL</div>
+                            <div class="range">Ref: 13.5-17.5</div>
+                        </div>
+                    </div>
+                    <div class="lab-item">
+                        <span class="name">Fasting Glucose</span>
+                        <div class="value-range">
+                            <div class="val val-normal">92 mg/dL</div>
+                            <div class="range">Ref: 70-100</div>
+                        </div>
+                    </div>
+                    <div class="lab-item">
+                        <span class="name">LDL Cholesterol</span>
+                        <div class="value-range">
+                            <div class="val val-alert">165 mg/dL</div>
+                            <div class="range">Ref: &lt;100</div>
+                        </div>
+                    </div>
+                    <div class="lab-item">
+                        <span class="name">Vitamin D</span>
+                        <div class="value-range">
+                            <div class="val val-warning">18 ng/mL</div>
+                            <div class="range">Ref: 30-100</div>
+                        </div>
+                    </div>
+                    <div class="lab-item">
+                        <span class="name">TSH</span>
+                        <div class="value-range">
+                            <div class="val val-normal">2.8 mIU/L</div>
+                            <div class="range">Ref: 0.4-4.0</div>
+                        </div>
+                    </div>
+                    <div class="lab-item">
+                        <span class="name">Creatinine</span>
+                        <div class="value-range">
+                            <div class="val val-warning">1.3 mg/dL</div>
+                            <div class="range">Ref: 0.7-1.2</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Health Chat -->
+        <div class="page" id="page-chat">
+            <div class="page-title">Health AI Chat</div>
+            <div class="chat-container">
+                <div class="chat-bubble chat-user">
+                    My cholesterol report shows LDL at 165. Should I be worried? What should I do?
+                </div>
+                <div class="chat-bubble chat-ai">
+                    Based on your latest report, your LDL cholesterol is 165 mg/dL, which is significantly above the optimal level of &lt;100 mg/dL.<br><br>
+                    <strong>Why this matters:</strong> Combined with your slightly elevated resting heart rate (avg 76 bpm this week) and family history of cardiac issues, this puts you at moderate cardiovascular risk.<br><br>
+                    <strong>My recommendation:</strong><br>
+                    🔴 <strong>Doctor consultation needed</strong> — I've prepared a health brief for Dr. Mehta. Statins may be considered, but this requires a prescription.<br><br>
+                    🟡 <strong>Immediate lifestyle changes:</strong><br>
+                    • Reduce saturated fat intake<br>
+                    • Add 30 min walking daily<br>
+                    • Consider plant sterols (OTC)<br><br>
+                    🟢 <strong>I'll track your progress</strong> — After your next lipid panel, I'll compare trends and adjust recommendations.<br><br>
+                    <em>Would you like me to request an appointment with Dr. Mehta?</em>
+                </div>
+                <div class="chat-bubble chat-user">
+                    Yes, please book an appointment. Also, is it safe to take fish oil supplements with my current BP medication?
+                </div>
+                <div class="chat-bubble chat-ai">
+                    ✅ <strong>Appointment requested</strong> with Dr. Mehta. You'll receive confirmation shortly.<br><br>
+                    Regarding fish oil + your Amlodipine (5mg):<br><br>
+                    <strong>Safe to combine</strong> — Fish oil (Omega-3) does not have significant interactions with Amlodipine. In fact, Omega-3 may provide additional cardiovascular benefits.<br><br>
+                    💊 <strong>Suggested:</strong> Fish Oil 1000mg (EPA+DHA), once daily with meals.<br><br>
+                    ⚠️ <strong>Note:</strong> Fish oil may have mild blood-thinning effects. Since you're not on anticoagulants, this is fine. I'll monitor via your next blood report.<br><br>
+                    <em>Shall I add this to your medication tracker?</em>
+                </div>
+            </div>
+            <div class="chat-input-bar">
+                <input type="text" class="chat-input" placeholder="Ask about your health...">
+                <button class="chat-send">➤</button>
+            </div>
+        </div>
+
+        <!-- Page 3: Medications -->
+        <div class="page" id="page-meds">
+            <div class="page-title">Medications</div>
+            <div class="content">
+                <div class="doctor-card">
+                    <h3>🩺 Doctor Alert Sent</h3>
+                    <p>A health brief about your elevated LDL cholesterol (165 mg/dL) has been sent to Dr. Mehta. Appointment requested for this week.</p>
+                    <button class="btn-connect">View Patient Brief</button>
+                </div>
+
+                <div class="section-title">Today's Schedule</div>
+                <div class="med-card">
+                    <div class="med-time">8:00<br>AM</div>
+                    <div class="med-info">
+                        <h4>Amlodipine 5mg</h4>
+                        <p>Blood pressure • Take before breakfast</p>
+                    </div>
+                    <div class="med-status-taken">✓</div>
+                </div>
+                <div class="med-card">
+                    <div class="med-time">9:00<br>AM</div>
+                    <div class="med-info">
+                        <h4>Vitamin D3 2000 IU</h4>
+                        <p>Supplement • Take with meal</p>
+                    </div>
+                    <div class="med-status-taken">✓</div>
+                </div>
+                <div class="med-card">
+                    <div class="med-time">1:00<br>PM</div>
+                    <div class="med-info">
+                        <h4>Fish Oil 1000mg</h4>
+                        <p>Supplement • Take with lunch</p>
+                    </div>
+                    <div class="med-status-pending"></div>
+                </div>
+                <div class="med-card">
+                    <div class="med-time">9:00<br>PM</div>
+                    <div class="med-info">
+                        <h4>Melatonin 3mg</h4>
+                        <p>Sleep aid • 30 min before bed</p>
+                    </div>
+                    <div class="med-status-pending"></div>
+                </div>
+
+                <div class="section-title" style="margin-top:20px">AI Medication Notes</div>
+                <div class="insight-card insight-green">
+                    <div class="insight-icon">✅</div>
+                    <div class="insight-content">
+                        <h4>No Drug Interactions Detected</h4>
+                        <p>All your current medications are safe to take together. No contraindications found.</p>
+                    </div>
+                </div>
+                <div class="insight-card insight-yellow">
+                    <div class="insight-icon">⏰</div>
+                    <div class="insight-content">
+                        <h4>Timing Optimization</h4>
+                        <p>Take Vitamin D with your fattiest meal for better absorption. Consider moving to lunch instead of breakfast.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Doctor Connect -->
+        <div class="page" id="page-doctor">
+            <div class="page-title">Doctor Connect</div>
+            <div class="content">
+                <div class="doctor-card">
+                    <h3>Dr. Priya Mehta</h3>
+                    <p>General Physician • Apollo Hospital<br>Connected since March 2026</p>
+                    <button class="btn-connect">Send Message</button>
+                </div>
+
+                <div class="section-title">Recent Alerts Sent</div>
+                <div class="insight-card insight-red">
+                    <div class="insight-icon">📋</div>
+                    <div class="insight-content">
+                        <h4>LDL Cholesterol Alert — Aug 12</h4>
+                        <p>Patient brief sent: LDL 165, resting HR elevated, family history positive. Statin evaluation recommended.</p>
+                        <span class="insight-tag tag-doctor">Awaiting Response</span>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top:20px">Patient Brief (Auto-Generated)</div>
+                <div class="lab-report-section">
+                    <p style="font-size:12px; line-height:1.6; color:#444;">
+                        <strong>Patient:</strong> Sahir P., Male, 35 yrs<br>
+                        <strong>Date:</strong> August 12, 2026<br>
+                        <strong>Concern:</strong> Elevated LDL Cholesterol<br><br>
+                        <strong>Key Findings:</strong><br>
+                        • LDL: 165 mg/dL (ref: &lt;100) ⬆️<br>
+                        • Total Cholesterol: 242 mg/dL (ref: &lt;200) ⬆️<br>
+                        • HDL: 42 mg/dL (ref: >60) ⬇️<br>
+                        • Resting HR (7-day avg): 76 bpm<br>
+                        • BP (recent): 132/84 mmHg<br>
+                        • Family History: Father — MI at 55<br><br>
+                        <strong>Current Medications:</strong> Amlodipine 5mg<br>
+                        <strong>AI Risk Assessment:</strong> Moderate CVD risk<br>
+                        <strong>Suggested Discussion:</strong> Statin therapy evaluation, lifestyle modification plan
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <a class="nav-item active" onclick="showPage('dashboard')">
+                <span class="nav-icon">🏠</span>
+                <span>Home</span>
+            </a>
+            <a class="nav-item" onclick="showPage('chat')">
+                <span class="nav-icon">💬</span>
+                <span>Health Chat</span>
+            </a>
+            <a class="nav-item" onclick="showPage('meds')">
+                <span class="nav-icon">💊</span>
+                <span>Medications</span>
+            </a>
+            <a class="nav-item" onclick="showPage('doctor')">
+                <span class="nav-icon">🩺</span>
+                <span>Doctor</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
